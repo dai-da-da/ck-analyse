@@ -3,22 +3,34 @@
 
 #引入标准库
 import socket as sk
+import threading as th
+import time as t
 
 ip="10.5.255.254"
+# ip="10.5.131.118"
 porks=[1,65535]
 
 #创建连接器
-links=sk.socket()
+
+
+def check_pork(pork):
+    try:
+        links=sk.socket()
+        links.connect((ip,pork))
+        print(str(pork)+":have")
+        links.send("GET".encode("UTF-8"))
+        # 接收服务端的消息
+        recv_data = links.recv(1024).decode("UTF-8")
+        print(str(pork)+f"服务端回复的消息是：{recv_data}")
+    except:
+        # print(str(pork)+":NULL",end='  ')
+        pass
+    
+    links.close()
+    if pork%100==0:
+        print("")
 
 for pork in range(porks[0],porks[1]):
-    try:
-        links.connect((ip,pork))
-        links.send("cs".encode("UTF-8"))
-        # 接收服务端的消息
-        recv_data = links.recv(1024).decode("UTF-8")    # 1024是缓冲区大小，一般就填1024， recv是阻塞式
-        print(f"服务端回复的消息是：{recv_data}")
-        links.close()
-    except:
-        print("error")
-        pass
-
+    checks=th.Thread(target=check_pork,args=(pork,))
+    checks.start()
+    t.sleep(0.001)
